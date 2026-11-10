@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEase - Online Store</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6fa;
+  color: #222;
+}
+
+/* Header */
+.header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 5%;
+  background: #1e293b; color: #fff;
+}
+.logo { font-size: 1.5rem; font-weight: bold; white-space: nowrap; }
+.search {
+  flex: 1; padding: 10px 14px;
+  border: none; border-radius: 6px; font-size: 1rem;
+}
+.cart-btn {
+  background: #f59e0b; border: none; color: #000;
+  padding: 10px 16px; border-radius: 6px;
+  font-weight: bold; cursor: pointer; white-space: nowrap;
+}
+.badge {
+  background: #dc2626; color: #fff;
+  border-radius: 50%; padding: 2px 8px; margin-left: 4px;
+}
+
+/* Hero */
+.hero {
+  text-align: center; padding: 60px 20px;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #fff;
+}
+.hero h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.hero p { font-size: 1.1rem; margin-bottom: 20px; }
+.hero-btn {
+  display: inline-block; background: #fff; color: #6366f1;
+  padding: 12px 30px; border-radius: 30px;
+  text-decoration: none; font-weight: bold;
+}
+
+/* Categories */
+.categories {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px; padding: 24px 5% 0;
+}
+.cat-btn {
+  padding: 8px 18px; border: 2px solid #6366f1;
+  background: #fff; color: #6366f1;
+  border-radius: 20px; cursor: pointer; font-weight: 600;
+}
+.cat-btn.active { background: #6366f1; color: #fff; }
+
+/* Products grid */
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px; padding: 24px 5% 40px;
+}
+.card {
+  background: #fff; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column;
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-4px); }
+.card-img {
+  height: 160px; display: flex; align-items: center; justify-content: center;
+  font-size: 4.5rem;
+}
+.card-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+.card-body h3 { font-size: 1.05rem; margin-bottom: 4px; }
+.cat-label { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
+.rating { color: #f59e0b; font-size: 0.9rem; margin-bottom: 8px; }
+.price { font-size: 1.2rem; font-weight: bold; color: #16a34a; }
+.old-price { text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-left: 6px; }
+.add-btn {
+  margin-top: auto; padding: 10px; border: none;
+  background: #6366f1; color: #fff; border-radius: 6px;
+  cursor: pointer; font-weight: bold; margin-top: 12px;
+}
+.add-btn:hover { background: #4f46e5; }
+.empty { grid-column: 1 / -1; text-align: center; color: #64748b; padding: 40px; }
+
+/* Cart sidebar */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); z-index: 20;
+}
+.overlay.show { display: block; }
+.cart {
+  position: fixed; top: 0; right: -420px; width: 400px; max-width: 100%;
+  height: 100%; background: #fff; z-index: 30;
+  display: flex; flex-direction: column;
+  transition: right 0.3s;
+}
+.cart.open { right: 0; }
+.cart-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px; border-bottom: 1px solid #e2e8f0;
+}
+.close { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+.cart-items { flex: 1; overflow-y: auto; padding: 14px; }
+.cart-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid #f1f5f9;
+}
+.cart-item .emoji { font-size: 2rem; }
+.cart-item .info { flex: 1; }
+.cart-item .info p { font-size: 0.9rem; color: #16a34a; font-weight: bold; }
+.qty { display: flex; align-items: center; gap: 6px; }
+.qty button {
+  width: 26px; height: 26px; border: 1px solid #cbd5e1;
+  background: #fff; border-radius: 4px; cursor: pointer;
+}
+.remove { color: #dc2626; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.cart-footer { padding: 18px; border-top: 1px solid #e2e8f0; }
+.total-row {
+  display: flex; justify-content: space-between;
+  font-size: 1.2rem; font-weight: bold; margin-bottom: 12px;
+}
+.checkout-btn {
+  width: 100%; padding: 12px; border: none;
+  background: #16a34a; color: #fff; font-size: 1rem;
+  border-radius: 6px; cursor: pointer; font-weight: bold;
+}
+.checkout-btn:hover { background: #15803d; }
+
+/* Modals */
+.modal {
+  display: none; position: fixed; inset: 0; z-index: 40;
+  background: rgba(0,0,0,0.5);
+  align-items: center; justify-content: center; padding: 16px;
+}
+.modal.show { display: flex; }
+.modal-box {
+  background: #fff; padding: 28px; border-radius: 12px;
+  width: 420px; max-width: 100%; position: relative;
+}
+.modal-box .close { position: absolute; top: 12px; right: 14px; }
+.modal-box h2 { margin-bottom: 16px; }
+.modal-box form { display: flex; flex-direction: column; gap: 12px; }
+.modal-box input, .modal-box textarea, .modal-box select {
+  padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem;
+  font-family: inherit;
+}
+.pay-total { font-size: 1.05rem; }
+.center { text-align: center; }
+.center p { margin-bottom: 18px; color: #475569; }
+.tick { font-size: 3.5rem; margin-bottom: 8px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; color: #fff; padding: 12px 22px;
+  border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 50;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* Footer */
+.footer { text-align: center; padding: 20px; background: #1e293b; color: #cbd5e1; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .header { flex-wrap: wrap; }
+  .search { order: 3; flex-basis: 100%; }
+  .logo { flex: 1; }
+  .hero h1 { font-size: 1.8rem; }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">🛍️ ShopEase</div>
+    <input type="text" id="searchBox" class="search" placeholder="Search products...">
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 Cart <span id="cartCount" class="badge">0</span>
+    </button>
+  </header>
+
+  <!-- Hero banner -->
+  <section class="hero">
+    <h1>Big Festive Sale</h1>
+    <p>Up to 50% off on electronics, fashion and more. Free delivery on orders above ₹999.</p>
+    <a href="#products" class="hero-btn">Shop Now</a>
+  </section>
+
+  <!-- Category filter -->
+  <section class="categories" id="categories"></section>
+
+  <!-- Products -->
+  <main class="products" id="products"></main>
+
+  <!-- Cart sidebar -->
+  <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+  <aside class="cart" id="cart">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="close" onclick="toggleCart()">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="total-row"><span>Total:</span><span id="cartTotal">₹0</span></div>
+      <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
+    </div>
+  </aside>
+
+  <!-- Checkout modal -->
+  <div class="modal" id="checkoutModal">
+    <div class="modal-box">
+      <button class="close" onclick="closeModal('checkoutModal')">✕</button>
+      <h2>Checkout</h2>
+      <form id="checkoutForm" onsubmit="placeOrder(event)">
+        <input type="text" id="custName" placeholder="Full Name" required>
+        <input type="email" id="custEmail" placeholder="Email" required>
+        <input type="tel" id="custPhone" placeholder="Phone Number" pattern="[0-9]{10}" title="10-digit phone number" required>
+        <textarea id="custAddress" placeholder="Delivery Address" rows="3" required></textarea>
+        <select id="payment" required>
+          <option value="">Select Payment Method</option>
+          <option>Cash on Delivery</option>
+          <option>UPI</option>
+          <option>Debit / Credit Card</option>
+        </select>
+        <p class="pay-total">Amount to pay: <b id="payTotal">₹0</b></p>
+        <button type="submit" class="checkout-btn">Place Order</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-box center">
+      <div class="tick">✅</div>
+      <h2>Order Placed Successfully!</h2>
+      <p id="orderMsg"></p>
+      <button class="checkout-btn" onclick="closeModal('successModal')">Continue Shopping</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    <p>© 2026 ShopEase | Serverless on AWS (S3 · API Gateway · Lambda · SQS · DynamoDB)</p>
+  </footer>
+
+  <script>
+// ===== API Gateway endpoint (POST /orders -> SubmitOrderFunction -> SQS -> ProcessOrderFunction -> DynamoDB) =====
+const API_URL = "YOUR_API_ENDPOINT/orders";
+
+// ===== Product data =====
+const products = [
+  { id: 1,  name: "Wireless Headphones", category: "Electronics", price: 1999, oldPrice: 3499, rating: 4.5, emoji: "🎧", color: "#e0e7ff" },
+  { id: 2,  name: "Smart Watch",         category: "Electronics", price: 2799, oldPrice: 4999, rating: 4.3, emoji: "⌚", color: "#e0e7ff" },
+  { id: 3,  name: "Laptop",              category: "Electronics", price: 45999, oldPrice: 55999, rating: 4.6, emoji: "💻", color: "#e0e7ff" },
+  { id: 4,  name: "Smartphone",          category: "Electronics", price: 15999, oldPrice: 19999, rating: 4.4, emoji: "📱", color: "#e0e7ff" },
+  { id: 5,  name: "Cotton T-Shirt",      category: "Fashion",     price: 499,  oldPrice: 999,  rating: 4.1, emoji: "👕", color: "#fce7f3" },
+  { id: 6,  name: "Denim Jeans",         category: "Fashion",     price: 1299, oldPrice: 2199, rating: 4.2, emoji: "👖", color: "#fce7f3" },
+  { id: 7,  name: "Running Shoes",       category: "Fashion",     price: 2499, oldPrice: 3999, rating: 4.5, emoji: "👟", color: "#fce7f3" },
+  { id: 8,  name: "Sunglasses",          category: "Fashion",     price: 799,  oldPrice: 1499, rating: 4.0, emoji: "🕶️", color: "#fce7f3" },
+  { id: 9,  name: "Coffee Maker",        category: "Home",        price: 3299, oldPrice: 4599, rating: 4.3, emoji: "☕", color: "#dcfce7" },
+  { id: 10, name: "Table Lamp",          category: "Home",        price: 899,  oldPrice: 1399, rating: 4.2, emoji: "💡", color: "#dcfce7" },
+  { id: 11, name: "Indoor Plant",        category: "Home",        price: 349,  oldPrice: 599,  rating: 4.7, emoji: "🪴", color: "#dcfce7" },
+  { id: 12, name: "Story Book",           category: "Books",       price: 299,  oldPrice: 450,  rating: 4.8, emoji: "📚", color: "#fef3c7" },
+  { id: 13, name: "Notebook Set",        category: "Books",       price: 199,  oldPrice: 300,  rating: 4.4, emoji: "📓", color: "#fef3c7" },
+  { id: 14, name: "Football",            category: "Sports",      price: 699,  oldPrice: 999,  rating: 4.3, emoji: "⚽", color: "#cffafe" },
+  { id: 15, name: "Cricket Bat",         category: "Sports",      price: 1599, oldPrice: 2299, rating: 4.5, emoji: "🏏", color: "#cffafe" },
+  { id: 16, name: "Yoga Mat",            category: "Sports",      price: 599,  oldPrice: 999,  rating: 4.4, emoji: "🧘", color: "#cffafe" }
+];
+
+// ===== State =====
+let cart = loadCart();
+let currentCategory = "All";
+
+function loadCart() {
+  try { return JSON.parse(localStorage.getItem("shopease_cart")) || []; }
+  catch (e) { return []; }
+}
+function saveCart() {
+  try { localStorage.setItem("shopease_cart", JSON.stringify(cart)); } catch (e) {}
+}
+const rupee = n => "₹" + n.toLocaleString("en-IN");
+
+// ===== Categories =====
+function renderCategories() {
+  const cats = ["All", ...new Set(products.map(p => p.category))];
+  document.getElementById("categories").innerHTML = cats.map(c =>
+    `<button class="cat-btn ${c === currentCategory ? "active" : ""}" onclick="filterCategory('${c}')">${c}</button>`
+  ).join("");
+}
+function filterCategory(cat) {
+  currentCategory = cat;
+  renderCategories();
+  renderProducts();
+}
+
+// ===== Products =====
+function stars(r) {
+  const full = Math.round(r);
+  return "★".repeat(full) + "☆".repeat(5 - full) + ` (${r})`;
+}
+function renderProducts() {
+  const q = document.getElementById("searchBox").value.toLowerCase().trim();
+  const list = products.filter(p =>
+    (currentCategory === "All" || p.category === currentCategory) &&
+    p.name.toLowerCase().includes(q)
+  );
+  const box = document.getElementById("products");
+  if (list.length === 0) {
+    box.innerHTML = `<p class="empty">No products found 😕</p>`;
+    return;
+  }
+  box.innerHTML = list.map(p => `
+    <div class="card">
+      <div class="card-img" style="background:${p.color}">${p.emoji}</div>
+      <div class="card-body">
+        <h3>${p.name}</h3>
+        <span class="cat-label">${p.category}</span>
+        <span class="rating">${stars(p.rating)}</span>
+        <div><span class="price">${rupee(p.price)}</span><span class="old-price">${rupee(p.oldPrice)}</span></div>
+        <button class="add-btn" onclick="addToCart(${p.id})">Add to Cart</button>
+      </div>
+    </div>`).join("");
+}
+
+// ===== Cart =====
+function addToCart(id) {
+  const item = cart.find(i => i.id === id);
+  if (item) item.qty++;
+  else cart.push({ id, qty: 1 });
+  saveCart();
+  renderCart();
+  showToast("Added to cart ✔");
+}
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  saveCart();
+  renderCart();
+}
+function removeItem(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+  renderCart();
+}
+function cartTotal() {
+  return cart.reduce((sum, i) => sum + products.find(p => p.id === i.id).price * i.qty, 0);
+}
+function renderCart() {
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById("cartCount").textContent = count;
+  document.getElementById("cartTotal").textContent = rupee(cartTotal());
+
+  const box = document.getElementById("cartItems");
+  if (cart.length === 0) {
+    box.innerHTML = `<p class="empty">Your cart is empty</p>`;
+    return;
+  }
+  box.innerHTML = cart.map(i => {
+    const p = products.find(x => x.id === i.id);
+    return `
+      <div class="cart-item">
+        <span class="emoji">${p.emoji}</span>
+        <div class="info">
+          <h4>${p.name}</h4>
+          <p>${rupee(p.price * i.qty)}</p>
+        </div>
+        <div class="qty">
+          <button onclick="changeQty(${p.id}, -1)">−</button>
+          <span>${i.qty}</span>
+          <button onclick="changeQty(${p.id}, 1)">+</button>
+        </div>
+        <button class="remove" onclick="removeItem(${p.id})">🗑</button>
+      </div>`;
+  }).join("");
+}
+function toggleCart() {
+  document.getElementById("cart").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("show");
+}
+
+// ===== Checkout =====
+function openCheckout() {
+  if (cart.length === 0) { showToast("Cart is empty!"); return; }
+  toggleCart();
+  document.getElementById("payTotal").textContent = rupee(cartTotal());
+  document.getElementById("checkoutModal").classList.add("show");
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove("show");
+}
+async function placeOrder(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector("button[type=submit]");
+  const name = document.getElementById("custName").value;
+  const payment = document.getElementById("payment").value;
+  const total = cartTotal();
+  const customer = {
+    customerName: name,
+    email: document.getElementById("custEmail").value,
+    phone: document.getElementById("custPhone").value,
+    address: document.getElementById("custAddress").value,
+    paymentMethod: payment
+  };
+
+  btn.disabled = true;
+  btn.textContent = "Placing order...";
+  try {
+    // One API call per cart item: { productName, quantity } as the backend expects
+    const results = await Promise.all(cart.map(i => {
+      const p = products.find(x => x.id === i.id);
+      return fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName: p.name, quantity: i.qty, price: p.price, ...customer })
+      });
+    }));
+    if (results.some(r => !r.ok)) throw new Error("Server returned an error");
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Failed to submit order. Check console (F12).");
+    btn.disabled = false;
+    btn.textContent = "Place Order";
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = "Place Order";
+
+  const orderId = "ORD" + Date.now().toString().slice(-6);
+  document.getElementById("orderMsg").innerHTML =
+    `Thank you, <b>${name}</b>!<br>Order ref: <b>${orderId}</b><br>` +
+    `Amount: <b>${rupee(total)}</b> via ${payment}<br>` +
+    `<small>Sent via API Gateway → Lambda → SQS → DynamoDB</small>`;
+  cart = [];
+  saveCart();
+  renderCart();
+  document.getElementById("checkoutForm").reset();
+  closeModal("checkoutModal");
+  document.getElementById("successModal").classList.add("show");
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+// ===== Init =====
+document.getElementById("searchBox").addEventListener("input", renderProducts);
+renderCategories();
+renderProducts();
+renderCart();
+
+</script>
+</body>
+</html>
